@@ -114,7 +114,7 @@
 ## Как это работает
 
 ```mermaid
-flowchart LR
+flowchart TB
   U["Браузер (SPA)"] -->|"cookie + CSRF"| API["PHP API v1"]
   A["AI-агент"] -->|"Bearer-токен"| API
   M["MCP-клиент"] -->|"stdio JSON-RPC"| S["MCP-сервер"]
