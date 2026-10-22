@@ -425,10 +425,6 @@ function toolResult(mixed $data): array
     $text = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     $result = ['content' => [['type' => 'text', 'text' => $text === false ? 'null' : $text]]];
 
-    if (is_array($data) && $data !== [] && array_is_list($data) === false) {
-        $result['structuredContent'] = $data;
-    }
-
     return $result;
 }
 
