@@ -47,7 +47,30 @@ php mcp/server.php --self-test
 # OK: 13 tools, protocol 2024-11-05
 ```
 
-## 3. Подключение клиента
+## 3. Размещение на сервере
+
+MCP-сервер не выкладывается в веб-корень: он запускается по stdio от имени пользователя сайта. Пример (каталог вне docroot):
+
+```bash
+mkdir -p /var/www/<site_user>/data/regru-mcp
+chown <site_user>:<site_user> /var/www/<site_user>/data/regru-mcp
+cp mcp/server.php /var/www/<site_user>/data/regru-mcp/
+# mcp.env (0600): REGRU_PANEL_URL, REGRU_API_TOKEN, REGRU_MCP_ALLOW_WRITE=0
+```
+
+Обёртка `/usr/local/bin/regru-mcp`:
+
+```sh
+#!/bin/sh
+set -a
+. /var/www/<site_user>/data/regru-mcp/mcp.env
+set +a
+exec php /var/www/<site_user>/data/regru-mcp/server.php "$@"
+```
+
+Проверка: `regru-mcp --self-test`; MCP-клиент запускает `/usr/local/bin/regru-mcp` без аргументов. При обновлении панели копируйте `mcp/server.php` заново.
+
+## 4. Подключение клиента
 
 ### Claude Desktop / Claude Code
 
@@ -97,7 +120,7 @@ printf '%s\n' \
   | REGRU_PANEL_URL=https://example.com/regru REGRU_API_TOKEN=rg_... php mcp/server.php
 ```
 
-## 4. Инструменты
+## 5. Инструменты
 
 | Инструмент | Изменяет | Право | Назначение |
 |---|---|---|---|
@@ -120,7 +143,7 @@ printf '%s\n' \
 
 Инструменты помечены `annotations.readOnlyHint`/`destructiveHint` — клиент может показать предупреждение.
 
-## 5. Безопасность
+## 6. Безопасность
 
 - По умолчанию сервер **только читает**. Изменения — осознанное включение `REGRU_MCP_ALLOW_WRITE=1`.
 - `regru_domain_renew` и `regru_raw_call` могут списывать деньги: выдавайте `write`/`regru:raw` только доверенному агенту.
@@ -129,7 +152,7 @@ printf '%s\n' \
 - Отзыв: `regru token:revoke --id=<id>` или UI «API REG.RU → Токены».
 - HTTPS обязателен; для самоподписанного сертификата в LAN — `REGRU_MCP_CAINFO` (предпочтительно) или `REGRU_MCP_INSECURE=1`.
 
-## 6. Ограничения и диагностика
+## 7. Ограничения и диагностика
 
 | Симптом | Причина / решение |
 |---|---|

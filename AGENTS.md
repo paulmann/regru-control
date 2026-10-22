@@ -217,6 +217,7 @@ php mcp/server.php
 - По умолчанию только чтение; изменения — `REGRU_MCP_ALLOW_WRITE=1`.
 - Конфигурация клиента: [`.mcp.json.example`](.mcp.json.example), описание: [`docs/MCP.md`](docs/MCP.md).
 - Проверка: `php mcp/server.php --self-test`.
+- На сервере (вне веб-корня): `/usr/local/bin/regru-mcp`, конфигурация `/var/www/<site_user>/data/regru-mcp/mcp.env` (0600).
 
 ---
 
