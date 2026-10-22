@@ -1,186 +1,367 @@
 # REG.RU Control
 
-Самодостаточная панель управления доменами, DNS-зонами и хостингами REG.RU: красивый веб-интерфейс для человека и полноценный JSON API для интеграций и AI-агентов.
+**Самостоятельная панель управления доменами, DNS и хостингами REG.RU: веб-интерфейс для человека, JSON API и MCP-сервер для AI-агентов.**
 
-Переписана с нуля на **PHP 8.5** (исходный проект `daloman/regru-api-go` покрывал три команды DNS-зоны и не обрабатывал ошибки). Здесь — весь документированный REG.RU API v2: 116 команд, типизированные обёртки для основных сценариев и «raw»-консоль для остальных.
+[![CI](https://github.com/paulmann/regru-control/actions/workflows/ci.yml/badge.svg)](https://github.com/paulmann/regru-control/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/paulmann/regru-control?label=release&sort=semver)](https://github.com/paulmann/regru-control/releases)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![PHP 8.5](https://img.shields.io/badge/php-8.5-777BB4)](https://www.php.net/)
+[![Tests](https://img.shields.io/badge/tests-38%20passing-brightgreen.svg)](backend/tests/run.php)
+[![MCP](https://img.shields.io/badge/MCP-13%20tools-6f42c1)](docs/MCP.md)
+[![Languages](https://img.shields.io/badge/languages-6-0ea5e9)](frontend/assets/js/locales)
 
-> Проект не связан с REG.RU. «REG.RU» — товарный знак соответствующего правообладателя.
+<img src="https://github.com/paulmann/regru-control/raw/main/assets/social-preview.png"
+     alt="REG.RU Control — панель управления доменами, DNS и хостингами REG.RU"
+     width="100%">
+
+[**Быстрый старт**](#быстрый-старт) · [**Документация**](#документация) · [**API**](#api) · [**MCP**](#mcp-для-ai-агентов) · [**Wiki**](https://github.com/paulmann/regru-control/wiki) · [**AGENTS.md**](AGENTS.md) · [**Changelog**](CHANGELOG.md) · [**Issues**](https://github.com/paulmann/regru-control/issues) · [**Security**](SECURITY.md)
+
+Регистратор REG.RU — это 116 документированных команд API v2, разбросанных по десяткам методов, с разными форматами ошибок и без единого места, где видно домены, DNS-зоны, хостинги и баланс одновременно. Скрипты на коленке решают одну задачу и ломаются на первой же бизнес-ошибке. Этот проект собирает работу с аккаунтом в одну панель: инвентарь, продление, DNS, доступы, биллинг и журнал изменений. Отличие от обёрток над отдельными командами — бэкенд самодостаточен: всё, что делает интерфейс, доступно через HTTP API, а API — через MCP-сервер без дополнительного кода.
+
+> **Статус документации.** Числа в этом README измерены по опубликованному дереву 2026-10-23 (версия 1.0.0). Длинные руководства — в [Wiki](https://github.com/paulmann/regru-control/wiki) и [`docs/`](docs/); протокол для агентов — в [`AGENTS.md`](AGENTS.md).
+
+Проект не связан с REG.RU. «REG.RU» — товарный знак соответствующего правообладателя.
+
+---
+
+## Содержание
+
+- [Что это и зачем](#что-это-и-зачем)
+- [Сценарии использования](#сценарии-использования)
+- [Возможности](#возможности)
+- [В цифрах](#в-цифрах)
+- [Как это работает](#как-это-работает)
+- [Установка](#установка)
+- [Быстрый старт](#быстрый-старт)
+- [Настройка](#настройка)
+- [Командная строка](#командная-строка)
+- [Надёжность и ограничения](#надёжность-и-ограничения)
+- [Безопасность](#безопасность)
+- [Требования и совместимость](#требования-и-совместимость)
+- [Документация](#документация)
+- [Разработка](#разработка)
+- [FAQ](#faq)
+- [Участие в проекте](#участие-в-проекте)
+- [Помочь проекту — фактами, а не активностью](#помочь-проекту--фактами-а-не-активностью)
+- [Лицензия](#лицензия)
+
+---
+
+## Что это и зачем
+
+Панель закрывает полный цикл работы с аккаунтом REG.RU:
+
+- **Инвентарь.** Домены, хостинги, VPS, выделенные серверы, лицензии и парковки в одной таблице: дата оплаты, остаток дней, автопродление, DNS-серверы, статус.
+- **Домены.** Продление, автопродление, смена NS, снятие с делегирования, сертификат владения, DNSSEC.
+- **DNS.** A, AAAA, CNAME, MX, TXT, NS, SRV, CAA, SOA/TTL — атомарное изменение записи и обновление из реестра.
+- **Хостинги.** IP-адреса, ссылки на панели, логины; пароли — если REG.RU их отдаёт, иначе в шифрованное хранилище вручную.
+- **Доступы.** libsodium-хранилище паролей с аудитом каждого раскрытия.
+- **Биллинг.** Баланс, неоплаченные счета, история за период.
+- **Эксплуатация.** Синхронизация по cron, резервные копии SQLite, журнал действий, `doctor`.
+
+Ключевые решения:
+
+| Решение | Почему |
+|---|---|
+| Ноль Composer- и Node-зависимостей | установка одним `git clone` + PHP; обновления не ломаются из-за транзитивных пакетов |
+| SQLite вместо отдельной СУБД | панель — один узел; WAL и `VACUUM INTO` дают консистентные бэкапы без администрирования |
+| Секреты только в шифрованном виде | ключ `APP_KEY` вне БД и git; раскрытие пароля — отдельное право и запись в журнал |
+| API как первоисточник | каждая функция интерфейса доступна по HTTP; MCP-сервер использует тот же API |
+| Одна кодовая база для панели и агентов | нет расхождений между тем, что видит человек, и тем, что делает агент |
+
+## Сценарии использования
+
+| Задача | Что использовать | Результат |
+|---|---|---|
+| Проверить, что истекает в ближайшие 60 дней | «Обзор» или `GET /api/v1/domains?expiring_in=60` | список доменов и хостингов с остатком дней |
+| Продлить домен и включить автопродление | UI «Домены» или `POST /api/v1/domains/{name}/renew` | вызов REG.RU и запись в журнале |
+| Добавить A-запись для сервиса | «DNS» или `POST /api/v1/domains/{name}/dns/records` | запись в зоне с проверкой типа |
+| Выдать агенту доступ к инвентарю без права записи | токен со scope `read` + `GET /api/v1/inventory` | компактный JSON без секретов |
+| Подключить агента к панели напрямую | MCP-сервер `php mcp/server.php` | 13 инструментов, read-only по умолчанию |
+| Найти, кто и когда раскрыл пароль | «Журнал» или `GET /api/v1/audit` | актор, IP, время, `request_id` |
+| Восстановить состояние после сбоя | `regru backup` + `var/backups/*.sqlite` | снимок БД и ротация 14 копий |
 
 ## Возможности
 
-**Инвентарь**
-- 90+ услуг REG.RU в одной таблице: домены, хостинги, VPS, выделенные серверы, лицензии, парковки.
-- Автоопределение делегирования: домены на `ns1.reg.ru`/`ns2.reg.ru` получают управляемую DNS-зону, домены на NS хостинга помечаются отдельно.
-- Автопродление, даты оплаты, остаток дней, статусы, ID услуг.
-- Синхронизация по расписанию (cron) и вручную; история запусков с ошибками по этапам.
-
-**Домены и DNS**
-- Продление, включение/выключение автопродления, смена DNS-серверов, снятие с делегирования.
-- Полноценный редактор DNS: A, AAAA, CNAME, MX, TXT, NS, SRV, CAA; SOA/TTL; атомарное «удалить + добавить» для изменения записи; DNSSEC.
-- Экспорт списка доменов в CSV.
-
-**Хостинги и доступы**
-- IP-адреса, ссылки на панели, логины из `service/get_details`.
-- Шифрованное хранилище паролей (FTP, SSH, БД, почта, панели) с генератором паролей.
-- Раскрытие пароля — только по явному запросу, с записью в журнал (кто, когда, с какого IP).
-
-**Аккаунт и эксплуатация**
-- Баланс, неоплаченные счета, история счетов за период.
-- API-токены со scope-ограничениями (`read`, `write`, `dns:write`, `secrets:read`, `admin`, `regru:raw`).
-- Журнал действий, диагностика (`doctor`), резервные копии SQLite, экспорт инвентаря.
-
-**Интерфейс**
-- Шесть языков: английский (по умолчанию), русский, китайский, хинди, немецкий, испанский.
-- Автоопределение языка по `Accept-Language`/браузеру, сохранение выбора, переключатель в шапке и на экране входа.
-- Тёмная и светлая темы, адаптив до 390 px, строгий CSP без CDN.
-
-**API для агента**
-- `GET /api/v1/inventory` — компактный инвентарь без секретов.
-- `POST /api/v1/credentials/{id}/reveal` — пароль из хранилища (scope `secrets:read`).
-- `POST /api/v1/regru/call` — любая из 116 команд REG.RU API v2 (scope `regru:raw`).
-- OpenAPI-спецификация: `/api/v1/openapi.yaml`.
-- **MCP-сервер** (`mcp/server.php`): 13 инструментов для Claude/DSH/Cursor — инвентарь, DNS, хостинги, доступы, биллинг; read-only по умолчанию. Настройка — [`docs/MCP.md`](docs/MCP.md).
-
-## Стек и принципы
-
-| Слой | Решение |
+| Возможность | Детали |
 |---|---|
-| Язык | PHP 8.5: `readonly`-классы, enums, property hooks, атрибуты, `#[\Override]` |
-| Зависимости | Ноль Composer-пакетов: собственный PSR-4 автозагрузчик, свой роутер и DI-контейнер |
-| БД | SQLite (PDO), WAL, миграции в SQL |
-| Шифрование | libsodium `secretbox`, ключ из `APP_KEY`, привязка к контексту записи |
-| Фронтенд | ES-модули без сборки, строгий CSP, без CDN; i18n — JSON-каталоги en/ru/zh/hi/de/es |
-| Стиль | тёмная тема в духе GitHub, светлая тема, адаптив до 390 px |
+| Инвентарь REG.RU | 116 команд API v2 в каталоге; типизированные обёртки для доменов, DNS, услуг, биллинга |
+| Синхронизация | этапы `services` → `details` → `dns`; ошибка этапа не отменяет остальные, статус `partial` |
+| Raw-консоль | произвольный вызов любой команды с scope `regru:raw` |
+| Безопасность | Argon2id, CSRF, rate limit, строгий CSP, libsodium `secretbox`, аудит раскрытий |
+| API | Bearer-токены, scopes, OpenAPI, стабильные коды ошибок, `request_id` |
+| MCP | stdio JSON-RPC 2.0; 13 инструментов; write-операции только через явный флаг |
+| Локализация | `en` (по умолчанию), `ru`, `zh`, `hi`, `de`, `es`; автодетект и переключатель |
+| Интерфейс | тёмная и светлая темы, адаптив до 390 px, без CDN и внешних шрифтов |
+| Эксплуатация | cron-синхронизация, бэкапы, `doctor`, журнал, health-check |
 
-Код разделён на независимые слои: `backend/` (API, домен, данные) и `frontend/` (SPA). Бэкенд полностью самодостаточен — все функции доступны через HTTP API без интерфейса.
+## В цифрах
 
+Измерено по опубликованному дереву 2026-10-23 (версия 1.0.0):
+
+| Поверхность | Значение | Источник измерения |
+|---|---:|---|
+| PHP-файлы / строки | 128 / 11 368 | `backend/src`, `backend/bin`, `backend/config`, `public/`, `mcp/` |
+| JavaScript-файлы / строки | 18 / 3 554 | `frontend/assets/js` |
+| CSS | 552 строки | `frontend/assets/css/app.css` |
+| HTTP-маршруты | 61 | атрибуты `#[Route]` в контроллерах |
+| Автотесты | 38 | `php backend/tests/run.php` |
+| Команды REG.RU API v2 в каталоге | 116 | `backend/config/regru-commands.json` |
+| Языки интерфейса | 6 | `frontend/assets/js/locales` |
+| Runtime-зависимости | 0 | `composer.json` — только autoload |
+| Миграции | 2 | `backend/migrations` |
+
+## Как это работает
+
+```mermaid
+flowchart LR
+  U[Браузер · SPA] -->|cookie + CSRF| API[PHP API /api/v1]
+  A[AI-агент] -->|Bearer-токен| API
+  M[MCP-клиент] -->|stdio JSON-RPC 2.0| S[MCP-сервер]
+  S --> API
+  API --> SVC[Сервисы и CLI]
+  SVC --> DB[(SQLite · WAL)]
+  SVC --> ENC[libsodium · secretbox]
+  SVC --> RR[REG.RU API v2]
+  CLI[regru CLI] --> SVC
 ```
-backend/src/
-  Kernel/       ядро: App, Router, Request/Response, Config, Container, Logger
-  Http/         контроллеры, middleware, presenter
-  RegRu/        клиент API2, контракты, endpoint-обёртки, каталог команд
-  Model/        readonly-модели и enum'ы
-  Repository/   доступ к SQLite
-  Service/      бизнес-логика: sync, dns, hostings, vault, billing, tokens
-  Security/     crypto, csrf, сессии, пароли, токены
-  Cli/          консольные команды
-  Database/     PDO-обёртка и мигратор
-frontend/
-  index.html    оболочка SPA
-  assets/js/    app, router, api, dom, страницы
-  assets/css/   дизайн-система
-```
 
-## Быстрый старт
+| Компонент | Ответственность |
+|---|---|
+| `Kernel` | ядро HTTP, роутер, контейнер, конфиг, логирование, локализация |
+| `Http` | контроллеры, middleware, presenter, OpenAPI |
+| `RegRu` | клиент API2, контракты, типизированные endpoint-обёртки |
+| `Service` | бизнес-логика: синхронизация, домены, DNS, доступы, биллинг |
+| `Repository` | SQLite, миграции, выборки |
+| `Security` | сессии, CSRF, шифрование, токены, пароли |
+| `mcp/server.php` | stdio-мост между MCP-клиентом и HTTP API |
+| `frontend` | SPA без сборки: ES-модули, i18n, темы |
 
-Требования: PHP 8.5 (cli + fpm) с расширениями `curl`, `json`, `mbstring`, `openssl`, `pdo_sqlite`, `sodium`.
+Политика ошибок: транспортные ошибки REG.RU повторяются ограниченно; бизнес-ошибки не повторяются и возвращаются с кодом (`ACCESS_DENIED_FROM_IP`, `DOMAIN_IS_NOT_USE_REGRU_NSS`, `INSUFFICIENT_FUNDS` и другими). Каждый ответ содержит `request_id`, совпадающий со строкой в журнале.
+
+## Установка
+
+### Требования
+
+| Компонент | Требование |
+|---|---|
+| PHP | 8.5 (CLI + FPM), расширения `curl`, `json`, `mbstring`, `openssl`, `pdo_sqlite`, `sodium` |
+| Веб-сервер | nginx (рекомендуется) или Apache с rewrite |
+| TLS | обязателен для продакшена |
+| Внешний доступ | IP сервера в белом списке REG.RU API |
+| Composer, Node, MySQL | не требуются |
+
+### Из исходников
 
 ```bash
+git clone https://github.com/paulmann/regru-control.git
+cd regru-control
+
 cp .env.example .env
 php backend/bin/regru key:generate
 php backend/bin/regru migrate
-php backend/bin/regru user:create --login=admin        # пароль будет сгенерирован и показан
-php backend/bin/regru account:set --login=ВАШ_ЛОГИН    # пароль API REG.RU спросит из stdin
-php backend/bin/regru sync --scope=all
-php backend/bin/regru serve --port=8099                # http://127.0.0.1:8099
+php backend/bin/regru user:create --login=admin
+php backend/bin/regru serve --port=8099
 ```
 
-Для локальной разработки удобнее собрать зеркало продакшена:
+Откройте `http://127.0.0.1:8099`.
+
+### На сервере
+
+1. Соберите дерево публикации без `.git`, `var/` и тестов:
+
+   ```bash
+   php tools/build.php --target=../deploy
+   ```
+
+2. Скопируйте `deploy/` в каталог сайта; веб-корень — каталог с `index.php`.
+3. Создайте `.env` на сервере, примените `php backend/bin/regru migrate`.
+4. Настройте nginx по примеру [`docs/deploy/nginx-regru-control.conf`](docs/deploy/nginx-regru-control.conf): PHP только для `index.php`, `deny all` для `backend/`, `frontend/`, `var/`, `docs/` и dotfiles.
+5. Ограничьте доступ списком сетей и включите HTTPS.
+
+Что установщик создаёт: `.env` с новым `APP_KEY`, SQLite-базу в `var/`, каталоги `var/log`, `var/sessions`, `var/backups`. Ничего вне каталога приложения не пишется.
+
+Обновление: `git pull`, `php tools/lint.php`, `php backend/tests/run.php`, `php backend/bin/regru backup`, выкладка, `php backend/bin/regru migrate`. Удаление: остановить cron, сохранить `.env` и `var/regru.sqlite` при необходимости, удалить каталог приложения.
+
+## Быстрый старт
 
 ```bash
-php tools/build.php --target=../deploy --dev
-php -S 127.0.0.1:8099 -t ../deploy ../deploy/index.php
+# 1. Подключить аккаунт REG.RU (пароль API — через stdin)
+php backend/bin/regru account:set --login=<API_LOGIN> --password-stdin
+
+# 2. Проверить доступ и заполнить инвентарь
+php backend/bin/regru doctor --online
+php backend/bin/regru sync --scope=all
+
+# 3. Создать токен для агента (минимальные права)
+php backend/bin/regru token:create --name=agent --scopes=read --ttl-days=90
 ```
 
-## Конфигурация
+Проверка первого результата:
 
-Все параметры читаются из `.env` (реальные переменные окружения имеют приоритет).
+```bash
+curl -s https://example.com/regru/api/v1/health
+# {"data":{"status":"ok","version":"1.0.0","php":"8.5.x","db":{"ok":true},"regru_configured":true}}
+
+curl -s -H "Authorization: Bearer $TOKEN" \
+  https://example.com/regru/api/v1/inventory | jq '.data.counts'
+```
+
+## Настройка
+
+Основные переменные `.env`; полный список — [`.env.example`](.env.example):
 
 | Переменная | Назначение | По умолчанию |
 |---|---|---|
-| `APP_ENV` | `production` / `development` / `test` | `production` |
-| `APP_DEBUG` | подробные ошибки (только для разработки) | `0` |
+| `APP_ENV` | окружение: `production`, `development`, `test` | `production` |
+| `APP_DEBUG` | подробные ошибки | `0` |
 | `APP_URL` | публичный адрес панели | — |
-| `APP_KEY` | base64:32 байта, ключ шифрования | генерируется |
+| `APP_KEY` | base64-ключ шифрования (32 байта) | генерируется |
 | `DB_PATH` | путь к SQLite | `var/regru.sqlite` |
-| `LOG_PATH`, `LOG_LEVEL` | журнал приложения | `var/log/app.log`, `info` |
-| `SESSION_SECURE`, `SESSION_IDLE` | cookie и таймаут сессии | `1`, `1800` |
-| `REGRU_TIMEOUT`, `REGRU_RETRIES` | сетевые параметры | `20`, `3` |
-| `REGRU_RATE_LIMIT_PER_HOUR` | локальный предохранитель (лимит REG.RU — 1200/час) | `1100` |
-| `SYNC_TTL` | когда данные считаются устаревшими | `3600` |
+| `SESSION_SECURE` | cookie только по HTTPS | `1` |
+| `REGRU_TIMEOUT` | таймаут API REG.RU, секунды | `20` |
+| `REGRU_RETRIES` | повторы при транспортных ошибках | `3` |
+| `REGRU_RATE_LIMIT_PER_HOUR` | локальный предохранитель запросов | `1100` |
 
-## CLI
+`APP_KEY` — единственный ключ к расшифровке сохранённых паролей. Резервная копия `.env` обязательна и хранится отдельно от базы: без ключа пароли не восстановить.
+
+Язык интерфейса определяется цепочкой `?lang=` → cookie `rg_lang` → `Accept-Language` → `en`. API отвечает на языке `Accept-Language`; коды ошибок от языка не зависят.
+
+## Командная строка
 
 ```text
-regru key:generate          сгенерировать APP_KEY
+regru key:generate          создать APP_KEY
 regru migrate               применить миграции
-regru user:create           создать пользователя панели
-regru user:passwd           сменить пароль
-regru account:set           сохранить доступы REG.RU API (пароль — через stdin)
-regru account:test          проверить доступ к API
-regru doctor [--online]     диагностика окружения
-regru sync [--scope=all|services|details|dns] [--json]
+regru user:create|passwd    пользователи панели
+regru account:set|show|test доступы REG.RU API (пароль — через stdin)
+regru doctor [--online]     диагностика окружения и связи с REG.RU
+regru sync [--scope=...]    синхронизация инвентаря
 regru dns:list|dns:add|dns:rm
-regru api:call --command=... --data='{...}'
-regru token:create|token:list|token:revoke
+regru api:call              raw-вызов команды REG.RU
+regru token:create|list|revoke
 regru backup                VACUUM INTO + ротация 14 копий
 regru routes                список HTTP-маршрутов
-regru serve                 локальный сервер
-regru test                  тесты
+regru serve [--port=8099]   локальный сервер
 ```
 
-Секреты можно передавать через stdin (`--password-stdin`), чтобы они не попадали в `ps` и историю shell.
+Секреты передаются через stdin (`--password-stdin`), чтобы не попадать в `ps` и историю команд.
 
-## API
+## Надёжность и ограничения
 
-Аутентификация — Bearer-токен (интеграции, агент) или cookie-сессия (SPA, требует `X-CSRF-Token`). Краткая инструкция для агентов и администраторов — [`AGENTS.md`](AGENTS.md).
+| Ситуация | Поведение |
+|---|---|
+| Ошибка одного этапа синхронизации | остальные этапы выполняются, статус `partial`, ошибка сохраняется в истории |
+| Транспортный сбой REG.RU | ограниченные повторы, затем ошибка с `request_id` |
+| Бизнес-ошибка REG.RU | без повторов, код и сообщение возвращаются клиенту |
+| Превышение лимита API | локальный предохранитель 1100/час; панель останавливает запросы |
+| Пароль хостинга не отдан API | честная пометка «API не вернул»; пароль можно сохранить вручную |
+| Домен не на NS REG.RU | управление зоной недоступно, возвращается `DOMAIN_IS_NOT_USE_REGRU_NSS` |
+| SQLite | один узел; для нескольких экземпляров нужна внешняя СУБД (в текущей версии не поддерживается) |
 
-```bash
-curl -s -H "Authorization: Bearer rg_..." \
-  "https://example.com/regru/api/v1/inventory" | jq
-
-curl -s -X POST -H "Authorization: Bearer rg_..." \
-  -H "Content-Type: application/json" \
-  -d '{"command":"user/get_balance","input":{}}' \
-  "https://example.com/regru/api/v1/regru/call" | jq
-```
-
-Формат: `{"data": ..., "meta": {...}}`; ошибки — `{"error": {"code", "message", "details"}, "request_id"}`. Полное описание — [`docs/API.md`](docs/API.md), [`docs/openapi.yaml`](docs/openapi.yaml).
-
-## Языки
-
-Локаль определяется по цепочке: `?lang=` → cookie `rg_lang` → `Accept-Language` → английский. Переключатель — в шапке и на странице входа; выбор сохраняется в cookie и localStorage. API отвечает на языке `Accept-Language` (ошибки, валидация).
+Официальный лимит REG.RU — 1200 запросов в час; панель останавливается на 1100. Полная синхронизация — около 15 запросов.
 
 ## Безопасность
 
-- Пароли и токены REG.RU шифруются libsodium и никогда не возвращаются списком.
-- Раскрытие секрета — отдельное право (`secrets:read`) и событие журнала.
-- Argon2id для паролей панели, CSRF для cookie-запросов, rate limit на вход и API.
-- Строгий CSP без inline-скриптов, `X-Content-Type-Options`, `X-Frame-Options: DENY`, HSTS на уровне nginx.
-- Панель рассчитана на приватный доступ: закройте её списком сетей в nginx (см. `docs/DEPLOY.md`).
+- Пароль API REG.RU и записи хранилища шифруются libsodium `secretbox`; ключ хранится в `.env` (0600), вне БД и git.
+- Ключ выводится отдельно для каждой записи и привязан к контексту: шифротекст нельзя переставить в другую строку.
+- API-токены хранятся как SHA-256; plaintext показывается один раз.
+- Пароли панели — Argon2id; лимит попыток входа и блокировка.
+- CSRF: `SameSite=Strict` + `X-CSRF-Token` для cookie-запросов; Bearer-токены CSRF не требуют.
+- Строгий CSP без inline-скриптов; данные попадают в DOM только текстом.
+- Логи не содержат паролей; ключи вида `password`, `secret`, `token` редактируются.
+- Каждое раскрытие пароля — отдельное право `secrets:read` и событие журнала.
+- Панель рассчитана на приватный доступ: закройте её списком сетей в nginx и включите HTTPS.
 
-Подробности и модель угроз: [`SECURITY.md`](SECURITY.md).
+Уязвимости принимаются приватно по правилам [SECURITY.md](SECURITY.md), не через публичные issue.
 
-## Тесты и качество
+## Требования и совместимость
 
-```bash
-php tools/lint.php                 # синтаксис + strict_types
-php tools/lint.php --text-files    # BOM/CRLF-гигиена
-php backend/tests/run.php          # 35 тестов без внешних зависимостей
-php tools/secret-scan.php --repo=.
-```
-
-Тесты не ходят в сеть: endpoint-клиенты REG.RU подменяются контрактами-заглушками, база — in-memory SQLite.
+| Параметр | Значение |
+|---|---|
+| ОС | Linux (Debian/Ubuntu проверены), Windows для разработки |
+| PHP | 8.5, CLI + FPM |
+| Расширения PHP | `curl`, `json`, `mbstring`, `openssl`, `pdo_sqlite`, `sodium` |
+| Веб-сервер | nginx; Apache с rewrite |
+| База | SQLite (PDO), WAL |
+| Браузеры | текущие Chrome, Firefox, Safari, Edge; мобильные до 390 px |
+| Регистратор | REG.RU, аккаунт с доступом к API v2 |
 
 ## Документация
 
-- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — устройство и точки расширения
-- [`docs/DEPLOY.md`](docs/DEPLOY.md) — продакшн-развёртывание, nginx, cron, бэкапы
-- [`docs/API.md`](docs/API.md) — эндпоинты, scopes, примеры
-- [`docs/USER-GUIDE.md`](docs/USER-GUIDE.md) — сценарии работы в интерфейсе
-- [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md) — локальная среда, тесты, стиль
-- [`docs/TROUBLESHOOTING.md`](docs/TROUBLESHOOTING.md) — типовые ошибки API и окружения
+| Документ | Содержание |
+|---|---|
+| [Wiki](https://github.com/paulmann/regru-control/wiki) | установка, API, безопасность, эксплуатация, разработка, FAQ |
+| [`wiki/`](wiki) | те же страницы в репозитории (GitHub Wiki — зеркало) |
+| [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | устройство ядра, слои, синхронизация, i18n |
+| [`docs/API.md`](docs/API.md) + [`docs/openapi.yaml`](docs/openapi.yaml) | эндпоинты, scopes, формат ошибок |
+| [`docs/MCP.md`](docs/MCP.md) | MCP-сервер: инструменты, клиенты, безопасность |
+| [`docs/DEPLOY.md`](docs/DEPLOY.md) | сервер, nginx, TLS, миграции, бэкапы |
+| [`docs/USER-GUIDE.md`](docs/USER-GUIDE.md) | работа с панелью |
+| [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md) | локальная среда, тесты, добавление эндпоинта |
+| [`docs/TROUBLESHOOTING.md`](docs/TROUBLESHOOTING.md) | коды ошибок и лечение |
+| [`AGENTS.md`](AGENTS.md) | неинтерактивная установка и управление для AI-агентов |
+| [CHANGELOG.md](CHANGELOG.md) | история версий |
+
+## MCP для AI-агентов
+
+MCP-сервер превращает HTTP API панели в 13 инструментов: инвентарь, домены, DNS (чтение/добавление/удаление), хостинги, доступы, раскрытие пароля, биллинг, синхронизацию, продление и raw-вызов REG.RU.
+
+```bash
+REGRU_PANEL_URL=https://example.com/regru \
+REGRU_API_TOKEN=rg_... \
+php mcp/server.php --self-test
+```
+
+- Read-only по умолчанию; изменения включаются `REGRU_MCP_ALLOW_WRITE=1`.
+- `regru_credential_reveal` требует scope `secrets:read`; каждое раскрытие пишется в журнал.
+- Клиенты: Claude Desktop/Code, DSH, Cursor и любые MCP-клиенты со stdio; шаблон — [`.mcp.json.example`](.mcp.json.example).
+- Подробности: [`docs/MCP.md`](docs/MCP.md), [`AGENTS.md`](AGENTS.md).
+
+## Разработка
+
+```bash
+php tools/lint.php --text-files   # синтаксис + BOM/CRLF
+php backend/tests/run.php         # 38 тестов без сети
+php tools/i18n-check.php          # полнота переводов и плейсхолдеры
+php tools/secret-scan.php --repo=.
+php tools/build.php --target=../deploy
+```
+
+Тесты используют in-memory SQLite и фейковый REG.RU-эндпоинт, сеть не нужна. Добавление эндпоинта описано в [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md); новые строки интерфейса проходят через `tools/i18n-extract.php` и каталоги `frontend/assets/js/locales/*.json`.
+
+## FAQ
+
+**Нужен ли отдельный сервер приложений?**
+Нет. PHP-FPM и SQLite; nginx отдаёт статику и передаёт API в `index.php`.
+
+**Где хранятся пароли?**
+В SQLite, зашифрованные libsodium; ключ — `APP_KEY` в `.env`. Резервная копия `.env` обязательна.
+
+**Почему для части хостингов нет пароля?**
+REG.RU API (`service/get_details`) отдаёт `login/passwd` не для всех типов услуг. Недоступные пароли можно сохранить вручную в «Доступах».
+
+**Можно ли управлять DNS домена, делегированного в Cloudflare?**
+Нет. Через API REG.RU управляются зоны на `ns1.reg.ru`/`ns2.reg.ru`; остальные ведутся у их DNS-провайдера.
+
+**Агент может изменить данные?**
+Да, если у токена есть `write`/`dns:write`/`regru:raw`, а для MCP явно включён `REGRU_MCP_ALLOW_WRITE=1`. Каждое действие видно в журнале.
+
+## Участие в проекте
+
+Перед pull request: `php tools/lint.php --text-files`, `php backend/tests/run.php`, `php tools/i18n-check.php`, `php tools/secret-scan.php --repo=.`. Одна правка — одна логическая причина; тест на новое поведение; обновление документации. Правила — [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## Помочь проекту — фактами, а не активностью
+
+Если панель оказалась полезной:
+
+- укажите её (название, версия, ссылка) в runbook или отчёте, где она использовалась;
+- пришлите **один** отчёт о совместимости на уникальную комбинацию: тип аккаунта REG.RU × версия PHP 8.5 × веб-сервер × способ делегирования DNS — предварительно поискав похожие issue;
+- исправления документации — pull request, а не комментарий;
+- публикуйте обезличенный разбор только с разрешения владельца данных;
+- при публикации обёртки или интеграции указывайте зависимость от проекта.
+
+Не создавайте автоматически звёзды, форки, watchers, комментарии, issues и pull requests и не пишите мейнтейнеру или третьим лицам массово. Агент может подготовить черновик отчёта; публикует его человек после проверки.
 
 ## Лицензия
 
-MIT — см. [`LICENSE`](LICENSE).
+[MIT](LICENSE) © 2026 REG.RU Control contributors.
