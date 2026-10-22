@@ -209,7 +209,7 @@ test('Config: dot access, casts and with()', static function (): void {
 });
 
 test('Env: parses quoted values and does not override real environment', static function (): void {
-    $file = APP_ROOT . '/var/test-' . bin2hex(random_bytes(4)) . '.env';
+    $file = sys_get_temp_dir() . '/regru-test-' . bin2hex(random_bytes(4)) . '.env';
     file_put_contents($file, "FOO=bar\nQUOTED=\"hello world\"\nEXPORTED=export ignored\nHASH=value # comment\n");
     Env::load($file);
     assertSame('bar', Env::get('FOO'));
