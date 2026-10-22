@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "regru-control": {
+      "command": "php",
+      "args": ["/path/to/regru-control/mcp/server.php"],
+      "env": {
+        "REGRU_PANEL_URL": "https://example.com/regru",
+        "REGRU_API_TOKEN": "rg_REPLACE_ME",
+        "REGRU_MCP_ALLOW_WRITE": "0",
+        "REGRU_MCP_LOCALE": "en"
+      }
+    }
+  }
+}

@@ -1,0 +1,26 @@
+#!/usr/bin/env php
+<?php
+
+/**
+ * REG.RU Control CLI entry point.
+ *
+ * Usage: php backend/bin/regru <command> [options]
+ */
+
+declare(strict_types=1);
+
+if (PHP_SAPI !== 'cli') {
+    http_response_code(403);
+    echo "CLI only.\n";
+
+    exit(1);
+}
+
+$root = dirname(__DIR__, 2);
+
+/** @var \RegRuControl\Kernel\Container $container */
+$container = require $root . '/backend/bootstrap.php';
+
+$application = $container->get(\RegRuControl\Cli\Application::class);
+
+exit($application->run($argv));

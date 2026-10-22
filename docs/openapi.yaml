@@ -1,0 +1,500 @@
+openapi: 3.1.0
+info:
+  title: REG.RU Control API
+  version: 1.0.0
+  description: |
+    JSON API панели управления доменами, DNS и хостингами REG.RU.
+
+    Аутентификация:
+    * `Authorization: Bearer rg_...` — API-токен (для интеграций и агентов);
+    * cookie-сессия панели — для SPA (требуется заголовок `X-CSRF-Token`).
+
+    Успешный ответ: `{"data": ..., "meta": {...}}`.
+    Ошибка: `{"error": {"code", "message", "details"}, "request_id": "..."}`.
+servers:
+  - url: ../
+    description: Текущий каталог панели
+security:
+  - bearerAuth: []
+  - cookieAuth: []
+tags:
+  - name: system
+  - name: domains
+  - name: dns
+  - name: hostings
+  - name: credentials
+  - name: billing
+  - name: sync
+  - name: tokens
+  - name: regru
+paths:
+  /locales:
+    get:
+      summary: Supported locales
+      operationId: listLocales
+      responses:
+        '200':
+          description: Locale list
+  /locale:
+    post:
+      summary: Store the language choice
+      operationId: setLocale
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [locale]
+              properties:
+                locale:
+                  type: string
+                  enum: [en, ru, zh, hi, de, es]
+      responses:
+        '200':
+          description: Locale stored
+        '400':
+          description: Unsupported locale  /api/v1/health:
+    get:
+      tags: [system]
+      summary: Состояние сервиса
+      security: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      status: { type: string, enum: [ok, degraded] }
+                      version: { type: string }
+                      php: { type: string }
+                      db: { type: object }
+  /api/v1/bootstrap:
+    get:
+      tags: [system]
+      summary: Данные для инициализации SPA
+      security: []
+      responses:
+        '200': { description: OK }
+  /api/v1/auth/login:
+    post:
+      tags: [system]
+      summary: Вход по логину и паролю
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [login, password]
+              properties:
+                login: { type: string }
+                password: { type: string, format: password }
+      responses:
+        '200': { description: Сессия создана }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /api/v1/auth/logout:
+    post:
+      tags: [system]
+      summary: Выход
+      responses:
+        '204': { description: Сессия завершена }
+  /api/v1/dashboard:
+    get:
+      tags: [system]
+      summary: Сводка для обзора
+      responses:
+        '200': { description: OK }
+  /api/v1/inventory:
+    get:
+      tags: [system]
+      summary: Компактный инвентарь для агента (без паролей)
+      responses:
+        '200': { description: OK }
+  /api/v1/domains:
+    get:
+      tags: [domains]
+      summary: Список доменов
+      parameters:
+        - { name: q, in: query, schema: { type: string } }
+        - { name: state, in: query, schema: { type: string, enum: [A, S, N, D, O] } }
+        - { name: expiring_in, in: query, schema: { type: integer } }
+        - { name: sort, in: query, schema: { type: string, enum: [dname, expiration, days_left, state] } }
+        - { name: dir, in: query, schema: { type: string, enum: [asc, desc] } }
+        - { name: page, in: query, schema: { type: integer, minimum: 1 } }
+        - { name: per_page, in: query, schema: { type: integer, maximum: 200 } }
+      responses:
+        '200': { description: OK }
+  /api/v1/domains/{name}:
+    get:
+      tags: [domains]
+      summary: Домен
+      parameters:
+        - { name: name, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: OK }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /api/v1/domains/{name}/renew:
+    post:
+      tags: [domains]
+      summary: Продлить домен
+      parameters:
+        - { name: name, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [period]
+              properties:
+                period: { type: integer, minimum: 1, maximum: 10 }
+      responses:
+        '200': { description: OK }
+  /api/v1/domains/{name}/autorenew:
+    post:
+      tags: [domains]
+      summary: Включить/выключить автопродление
+      parameters:
+        - { name: name, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [enabled]
+              properties:
+                enabled: { type: boolean }
+      responses:
+        '200': { description: OK }
+  /api/v1/domains/{name}/ns:
+    put:
+      tags: [domains]
+      summary: Изменить DNS-серверы
+      parameters:
+        - { name: name, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nss:
+                  type: array
+                  items: { type: string }
+                undelegate: { type: boolean }
+      responses:
+        '200': { description: OK }
+  /api/v1/domains/{name}/dns:
+    get:
+      tags: [dns]
+      summary: Ресурсные записи зоны
+      parameters:
+        - { name: name, in: path, required: true, schema: { type: string } }
+        - { name: refresh, in: query, schema: { type: boolean } }
+      responses:
+        '200': { description: OK }
+        '409': { description: Домен не на DNS REG.RU }
+  /api/v1/domains/{name}/dns/records:
+    post:
+      tags: [dns]
+      summary: Добавить запись
+      parameters:
+        - { name: name, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [subname, rectype, content]
+              properties:
+                subname: { type: string, examples: ['@', 'www'] }
+                rectype: { type: string, enum: [A, AAAA, CNAME, MX, TXT, NS, SRV, CAA] }
+                content: { type: string }
+                prio: { type: integer, minimum: 0, maximum: 65535 }
+      responses:
+        '201': { description: Создано }
+        '422': { $ref: '#/components/responses/Validation' }
+    put:
+      tags: [dns]
+      summary: Изменить запись (remove + add атомарно)
+      parameters:
+        - { name: name, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [old, subname, rectype, content]
+              properties:
+                old:
+                  type: object
+                  properties:
+                    subname: { type: string }
+                    rectype: { type: string }
+                    content: { type: string }
+                    prio: { type: integer }
+                subname: { type: string }
+                rectype: { type: string }
+                content: { type: string }
+                prio: { type: integer }
+      responses:
+        '200': { description: OK }
+    delete:
+      tags: [dns]
+      summary: Удалить запись
+      parameters:
+        - { name: name, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                record:
+                  type: object
+                  properties:
+                    subname: { type: string }
+                    rectype: { type: string }
+                    content: { type: string }
+                    prio: { type: integer }
+      responses:
+        '200': { description: OK }
+  /api/v1/domains/{name}/dns/soa:
+    put:
+      tags: [dns]
+      summary: Изменить TTL зоны
+      parameters:
+        - { name: name, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [ttl, minimum_ttl]
+              properties:
+                ttl: { type: string, examples: ['1d'] }
+                minimum_ttl: { type: string, examples: ['3h'] }
+      responses:
+        '200': { description: OK }
+  /api/v1/hostings:
+    get:
+      tags: [hostings]
+      summary: Хостинги и серверы
+      responses:
+        '200': { description: OK }
+  /api/v1/hostings/{id}:
+    get:
+      tags: [hostings]
+      summary: Хостинг с деталями
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: OK }
+  /api/v1/hostings/{id}/reveal:
+    post:
+      tags: [hostings]
+      summary: Расшифровать пароль панели (scope secrets:read)
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: OK }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /api/v1/hostings/sync:
+    post:
+      tags: [hostings]
+      summary: Обновить данные хостингов из REG.RU
+      responses:
+        '200': { description: OK }
+  /api/v1/credentials:
+    get:
+      tags: [credentials]
+      summary: Список доступов
+      parameters:
+        - { name: kind, in: query, schema: { type: string } }
+        - { name: q, in: query, schema: { type: string } }
+      responses:
+        '200': { description: OK }
+    post:
+      tags: [credentials]
+      summary: Создать доступ
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title, password]
+              properties:
+                title: { type: string }
+                kind: { type: string }
+                host: { type: string }
+                port: { type: integer }
+                username: { type: string }
+                password: { type: string, format: password }
+                url: { type: string }
+                notes: { type: string }
+                dname: { type: string }
+                service_id: { type: string }
+      responses:
+        '201': { description: Создано }
+  /api/v1/credentials/{id}:
+    put:
+      tags: [credentials]
+      summary: Изменить доступ
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      responses:
+        '200': { description: OK }
+    delete:
+      tags: [credentials]
+      summary: Удалить доступ
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      responses:
+        '204': { description: Удалено }
+  /api/v1/credentials/{id}/reveal:
+    post:
+      tags: [credentials]
+      summary: Расшифровать пароль (scope secrets:read, событие в журнале)
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      responses:
+        '200': { description: OK }
+  /api/v1/billing:
+    get:
+      tags: [billing]
+      summary: Баланс
+      parameters:
+        - { name: refresh, in: query, schema: { type: boolean } }
+      responses:
+        '200': { description: OK }
+  /api/v1/billing/bills:
+    get:
+      tags: [billing]
+      summary: Счета за период
+      parameters:
+        - { name: from, in: query, schema: { type: string, format: date } }
+        - { name: to, in: query, schema: { type: string, format: date } }
+        - { name: limit, in: query, schema: { type: integer } }
+        - { name: offset, in: query, schema: { type: integer } }
+      responses:
+        '200': { description: OK }
+  /api/v1/sync:
+    get:
+      tags: [sync]
+      summary: Состояние и история синхронизации
+      responses:
+        '200': { description: OK }
+    post:
+      tags: [sync]
+      summary: Запустить синхронизацию
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                scope: { type: string, enum: [all, services, details, dns] }
+      responses:
+        '200': { description: OK }
+        '409': { description: Уже выполняется }
+  /api/v1/tokens:
+    get:
+      tags: [tokens]
+      summary: Список API-токенов (admin)
+      responses:
+        '200': { description: OK }
+    post:
+      tags: [tokens]
+      summary: Создать токен (admin); plaintext возвращается один раз
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, scopes]
+              properties:
+                name: { type: string }
+                scopes:
+                  type: array
+                  items: { type: string, enum: [read, write, dns:write, secrets:read, admin, regru:raw] }
+                ttl_days: { type: integer }
+      responses:
+        '201': { description: Создано }
+  /api/v1/tokens/{id}:
+    delete:
+      tags: [tokens]
+      summary: Отозвать токен (admin)
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      responses:
+        '204': { description: Отозван }
+  /api/v1/meta/commands:
+    get:
+      tags: [regru]
+      summary: Каталог команд REG.RU API v2
+      responses:
+        '200': { description: OK }
+  /api/v1/regru/call:
+    post:
+      tags: [regru]
+      summary: Произвольный вызов REG.RU API (scope regru:raw)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [command]
+              properties:
+                command: { type: string, examples: ['user/get_balance'] }
+                input: { type: object }
+      responses:
+        '200': { description: Ответ REG.RU }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /api/v1/audit:
+    get:
+      tags: [system]
+      summary: Журнал действий (admin)
+      parameters:
+        - { name: action, in: query, schema: { type: string } }
+        - { name: actor, in: query, schema: { type: string } }
+        - { name: limit, in: query, schema: { type: integer } }
+        - { name: offset, in: query, schema: { type: integer } }
+      responses:
+        '200': { description: OK }
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: 'Токен вида rg_... (scope-ограниченный)'
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: rg_session
+  responses:
+    Unauthorized:
+      description: Требуется авторизация
+    Forbidden:
+      description: Недостаточно прав (scope)
+    NotFound:
+      description: Объект не найден
+    Validation:
+      description: Ошибка валидации

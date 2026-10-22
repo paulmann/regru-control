@@ -1,0 +1,36 @@
+{
+  "name": "regru/control",
+  "description": "Modern self-hosted control panel and JSON API for REG.RU API v2: domains, DNS, services, hostings and encrypted credentials.",
+  "type": "project",
+  "license": "MIT",
+  "keywords": ["regru", "domains", "dns", "hosting", "control-panel", "api", "php85"],
+  "require": {
+    "php": "^8.5",
+    "ext-curl": "*",
+    "ext-json": "*",
+    "ext-mbstring": "*",
+    "ext-openssl": "*",
+    "ext-pdo": "*",
+    "ext-pdo_sqlite": "*",
+    "ext-sodium": "*"
+  },
+  "autoload": {
+    "psr-4": {
+      "RegRuControl\\": "backend/src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "RegRuControl\\Tests\\": "backend/tests/"
+    }
+  },
+  "config": {
+    "optimize-autoloader": true,
+    "sort-packages": true
+  },
+  "scripts": {
+    "test": "php backend/tests/run.php",
+    "lint": "php tools/lint.php",
+    "serve": "php -S 127.0.0.1:8099 -t public public/index.php"
+  }
+}

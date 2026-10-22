@@ -1,0 +1,1183 @@
+{
+    "_meta": {
+        "source": "https://www.reg.ru/reseller/api2doc",
+        "fetched_at": "2026-10-22T20:20:53.480Z",
+        "generated_at": "2026-10-22T20:21:28+00:00",
+        "command_count": 116,
+        "note": "Справочный каталог команд REG.RU API v2. Полные описания параметров — в официальной документации."
+    },
+    "groups": [
+        "Общие функции",
+        "Счета и платежи",
+        "DNSSEC",
+        "Домены",
+        "Папки услуг",
+        "Хостинги",
+        "Услуги",
+        "Магазин доменов",
+        "Пользователь и аккаунт",
+        "DNS-зоны"
+    ],
+    "commands": [
+        {
+            "command": "nop",
+            "title": "nop",
+            "group": "",
+            "group_label": "Общие функции",
+            "purpose": "для тестирования, здесь — ничегонеделание + получение логина и идентификатора залогиненого пользователя",
+            "availability": "Клиенты",
+            "list_support": false,
+            "number": "4.1"
+        },
+        {
+            "command": "reseller_nop",
+            "title": "reseller_nop",
+            "group": "",
+            "group_label": "Общие функции",
+            "purpose": "полностью аналогична функции nop за исключением двух следующих пунктов",
+            "availability": "Партнёры",
+            "list_support": false,
+            "number": "4.2"
+        },
+        {
+            "command": "get_user_id",
+            "title": "get_user_id",
+            "group": "",
+            "group_label": "Общие функции",
+            "purpose": "для тестирования, возвращает идентификатор залогиненого пользователя",
+            "availability": "Клиенты",
+            "list_support": false,
+            "number": "4.3"
+        },
+        {
+            "command": "get_service_id",
+            "title": "get_service_id",
+            "group": "",
+            "group_label": "Общие функции",
+            "purpose": "получение id домена или услуги",
+            "availability": "Клиенты",
+            "list_support": false,
+            "number": "4.4"
+        },
+        {
+            "command": "bill/nop",
+            "title": "bill/nop",
+            "group": "bill",
+            "group_label": "Счета и платежи",
+            "purpose": "для тестирования",
+            "availability": "Клиенты",
+            "list_support": null,
+            "number": "6.1"
+        },
+        {
+            "command": "bill/get_not_payed",
+            "title": "bill/get_not_payed",
+            "group": "bill",
+            "group_label": "Счета и платежи",
+            "purpose": "получение списка неоплаченных счетов",
+            "availability": "Клиенты",
+            "list_support": null,
+            "number": "6.2"
+        },
+        {
+            "command": "bill/get_for_period",
+            "title": "bill/get_for_period",
+            "group": "bill",
+            "group_label": "Счета и платежи",
+            "purpose": "получение списка счетов за указанный период",
+            "availability": "Партнёры",
+            "list_support": null,
+            "number": "6.3"
+        },
+        {
+            "command": "bill/change_pay_type",
+            "title": "bill/change_pay_type",
+            "group": "bill",
+            "group_label": "Счета и платежи",
+            "purpose": "изменение способа оплаты счёта, для некоторых способов возможно выставление счёта в указанной системе оплаты, для prepay оплата производится сразу",
+            "availability": "Клиенты",
+            "list_support": null,
+            "number": "6.4"
+        },
+        {
+            "command": "bill/delete",
+            "title": "bill/delete",
+            "group": "bill",
+            "group_label": "Счета и платежи",
+            "purpose": "Удаление неоплаченных счетов",
+            "availability": "Клиенты",
+            "list_support": null,
+            "number": "6.5"
+        },
+        {
+            "command": "dnssec/nop",
+            "title": "dnssec/nop",
+            "group": "dnssec",
+            "group_label": "DNSSEC",
+            "purpose": "Для тестирования, позволяет проверить доступность управления DNSSEC доменов",
+            "availability": "Клиенты",
+            "list_support": true,
+            "number": "10.1"
+        },
+        {
+            "command": "dnssec/get_status",
+            "title": "dnssec/get_status",
+            "group": "dnssec",
+            "group_label": "DNSSEC",
+            "purpose": "Получение статуса DNSSEC домена",
+            "availability": "Клиенты",
+            "list_support": true,
+            "number": "10.2"
+        },
+        {
+            "command": "dnssec/enable",
+            "title": "dnssec/enable",
+            "group": "dnssec",
+            "group_label": "DNSSEC",
+            "purpose": "Включение DNSSEC для домена, использующего DNS сервера REG.RU. Проверить завершение выполнения операции можно используя функцию get_status.",
+            "availability": "Клиенты",
+            "list_support": true,
+            "number": "10.3"
+        },
+        {
+            "command": "dnssec/disable",
+            "title": "dnssec/disable",
+            "group": "dnssec",
+            "group_label": "DNSSEC",
+            "purpose": "Выключение DNSSEC для домена. Проверить завершение выполнения операции можно используя функцию get_status.",
+            "availability": "Клиенты",
+            "list_support": true,
+            "number": "10.4"
+        },
+        {
+            "command": "dnssec/renew_ksk",
+            "title": "dnssec/renew_ksk",
+            "group": "dnssec",
+            "group_label": "DNSSEC",
+            "purpose": "Обновление KSK ключа для домена, использующего DNS сервера REG.RU. Проверить завершение выполнения операции можно используя функцию get_status.",
+            "availability": "Клиенты",
+            "list_support": true,
+            "number": "10.5"
+        },
+        {
+            "command": "dnssec/renew_zsk",
+            "title": "dnssec/renew_zsk",
+            "group": "dnssec",
+            "group_label": "DNSSEC",
+            "purpose": "Обновление ZSK ключа для домена, использующего DNS сервера REG.RU. Проверить завершение выполнения операции можно используя функцию get_status.",
+            "availability": "Клиенты",
+            "list_support": true,
+            "number": "10.6"
+        },
+        {
+            "command": "dnssec/get_records",
+            "title": "dnssec/get_records",
+            "group": "dnssec",
+            "group_label": "DNSSEC",
+            "purpose": "Получение списка DNSSEC записей домена. Для доменов на DNS серверах REG.RU это DNS записи DS и DNSKEY, а для остальных доменов — записи DNSSEC, в том виде как они хранятся в родительской зоне.",
+            "availability": "Клиенты",
+            "list_support": true,
+            "number": "10.7"
+        },
+        {
+            "command": "dnssec/add_keys",
+            "title": "dnssec/add_keys",
+            "group": "dnssec",
+            "group_label": "DNSSEC",
+            "purpose": "Передача информации о KSK ключах в родительскую зону. Можно использовать только для доменов НЕ использующих DNS сервера REG.RU. Проверить завершение выполнения операции можно используя функции get_status, get_records.",
+            "availability": "Клиенты",
+            "list_support": true,
+            "number": "10.8"
+        },
+        {
+            "command": "domain/nop",
+            "title": "domain/nop",
+            "group": "domain",
+            "group_label": "Домены",
+            "purpose": "для тестирования, также позволяет проверить доступность домена и получить его id, если передать username+password+dname",
+            "availability": "Все",
+            "list_support": false,
+            "number": "8.1"
+        },
+        {
+            "command": "domain/set_new_authinfo",
+            "title": "domain/set_new_authinfo",
+            "group": "domain",
+            "group_label": "Домены",
+            "purpose": "замена неверного ключа переноса (authinfo) домена, доступно только до отправки запроса в реестр",
+            "availability": "Клиенты",
+            "list_support": true,
+            "number": "8.10"
+        },
+        {
+            "command": "domain/get_rereg_data",
+            "title": "domain/get_rereg_data",
+            "group": "domain",
+            "group_label": "Домены",
+            "purpose": "получить список освобождающихся доменов с характеристиками, данные обновляются 1 раз в 30 минут",
+            "availability": "Партнёры",
+            "list_support": false,
+            "number": "8.11"
+        },
+        {
+            "command": "domain/set_rereg_bids",
+            "title": "domain/set_rereg_bids",
+            "group": "domain",
+            "group_label": "Домены",
+            "purpose": "Сделать ставки на освобождающиеся домены.",
+            "availability": "Клиенты",
+            "list_support": true,
+            "number": "8.12"
+        },
+        {
+            "command": "domain/get_user_rereg_bids",
+            "title": "domain/get_user_rereg_bids",
+            "group": "domain",
+            "group_label": "Домены",
+            "purpose": "получить список освобождающихся доменов со своими ставками, в списке так же присутсвуют домены по которым ставка перебита",
+            "availability": "Клиенты",
+            "list_support": false,
+            "number": "8.13"
+        },
+        {
+            "command": "domain/get_docs_upload_uri",
+            "title": "domain/get_docs_upload_uri",
+            "group": "domain",
+            "group_label": "Домены",
+            "purpose": "получение ссылки на закачивание документов из интернета для .RU/.SU/.РФ доменов",
+            "availability": "Клиенты",
+            "list_support": false,
+            "number": "8.14"
+        },
+        {
+            "command": "domain/update_contacts",
+            "title": "domain/update_contacts",
+            "group": "domain",
+            "group_label": "Домены",
+            "purpose": "Изменение контактных данных домена",
+            "availability": "Клиенты",
+            "list_support": true,
+            "number": "8.15"
+        },
+        {
+            "command": "domain/update_private_person_flag",
+            "title": "domain/update_private_person_flag",
+            "group": "domain",
+            "group_label": "Домены",
+            "purpose": "Изменение флага Private Person скрытия/отображения контактных данных в whois",
+            "availability": "Клиенты",
+            "list_support": true,
+            "number": "8.16"
+        },
+        {
+            "command": "domain/register_ns",
+            "title": "domain/register_ns",
+            "group": "domain",
+            "group_label": "Домены",
+            "purpose": "внесение домена в NSI-registry, работает только для международных доменов",
+            "availability": "Все",
+            "list_support": false,
+            "number": "8.17"
+        },
+        {
+            "command": "domain/delete_ns",
+            "title": "domain/delete_ns",
+            "group": "domain",
+            "group_label": "Домены",
+            "purpose": "удаление домена из NSI-registry, поддерживаются только для международных доменов",
+            "availability": "Все",
+            "list_support": false,
+            "number": "8.18"
+        },
+        {
+            "command": "domain/get_nss",
+            "title": "domain/get_nss",
+            "group": "domain",
+            "group_label": "Домены",
+            "purpose": "Получение DNS для доменов",
+            "availability": "Клиенты",
+            "list_support": true,
+            "number": "8.19"
+        },
+        {
+            "command": "domain/get_prices",
+            "title": "domain/get_prices",
+            "group": "domain",
+            "group_label": "Домены",
+            "purpose": "Получение цен на регистрацию/продление доменов во всех доступных зонах.",
+            "availability": "Все",
+            "list_support": false,
+            "number": "8.2"
+        },
+        {
+            "command": "domain/update_nss",
+            "title": "domain/update_nss",
+            "group": "domain",
+            "group_label": "Домены",
+            "purpose": "Изменение DNS серверов домена, установка/снятие делегирования домена (только для партнёров)",
+            "availability": "Клиенты",
+            "list_support": true,
+            "number": "8.20"
+        },
+        {
+            "command": "domain/delegate",
+            "title": "domain/delegate",
+            "group": "domain",
+            "group_label": "Домены",
+            "purpose": "Установка флага делегирования домена",
+            "availability": "Все",
+            "list_support": true,
+            "number": "8.21"
+        },
+        {
+            "command": "domain/undelegate",
+            "title": "domain/undelegate",
+            "group": "domain",
+            "group_label": "Домены",
+            "purpose": "Снятие флага делегирования домена",
+            "availability": "Партнёры",
+            "list_support": true,
+            "number": "8.22"
+        },
+        {
+            "command": "domain/transfer_to_another_account",
+            "title": "domain/transfer_to_another_account",
+            "group": "domain",
+            "group_label": "Домены",
+            "purpose": "Полная передача домена на другой аккаунт",
+            "availability": "Партнёры",
+            "list_support": true,
+            "number": "8.23"
+        },
+        {
+            "command": "domain/look_at_entering_list",
+            "title": "domain/look_at_entering_list",
+            "group": "domain",
+            "group_label": "Домены",
+            "purpose": "просмотр передаваемых на аккаунт доменов",
+            "availability": "Партнёры",
+            "list_support": true,
+            "number": "8.24"
+        },
+        {
+            "command": "domain/accept_or_refuse_entering_list",
+            "title": "domain/accept_or_refuse_entering_list",
+            "group": "domain",
+            "group_label": "Домены",
+            "purpose": "Принять или отклонить передаваемые на этот аккаунт домены",
+            "availability": "Партнёры",
+            "list_support": true,
+            "number": "8.25"
+        },
+        {
+            "command": "domain/request_to_transfer",
+            "title": "domain/request_to_transfer",
+            "group": "domain",
+            "group_label": "Домены",
+            "purpose": "Отправка запроса на перенос желаемых доменных имён, находящихся на обслуживании в REG.RU, на Ваш аккаунт.",
+            "availability": "Партнёры",
+            "list_support": false,
+            "number": "8.26"
+        },
+        {
+            "command": "domain/get_tld_info",
+            "title": "domain/get_tld_info",
+            "group": "domain",
+            "group_label": "Домены",
+            "purpose": "Запрос на получение информации о зоне",
+            "availability": "Клиенты",
+            "list_support": true,
+            "number": "8.27"
+        },
+        {
+            "command": "domain/send_email_verification_letter",
+            "title": "domain/send_email_verification_letter",
+            "group": "domain",
+            "group_label": "Домены",
+            "purpose": "Отправка писем с запросом верификации почты GTLD доменов и проверка подтверждения email для аккредитованных зон",
+            "availability": "Партнёры",
+            "list_support": true,
+            "number": "8.28"
+        },
+        {
+            "command": "domain/download_certificate",
+            "title": "domain/download_certificate",
+            "group": "domain",
+            "group_label": "Домены",
+            "purpose": "Скачивание сертификата на владение доменом (тип услуги «srv_voucher»)",
+            "availability": "Партнёры",
+            "list_support": true,
+            "number": "8.29"
+        },
+        {
+            "command": "domain/get_suggest",
+            "title": "domain/get_suggest",
+            "group": "domain",
+            "group_label": "Домены",
+            "purpose": "подбор имени для домена по ключевым словам, функция работает подобно сервису Reg.Choice",
+            "availability": "Партнёры",
+            "list_support": false,
+            "number": "8.3"
+        },
+        {
+            "command": "domain/order_trustee",
+            "title": "domain/order_trustee",
+            "group": "domain",
+            "group_label": "Домены",
+            "purpose": "Подключение Trustee услуги на выбраный домен",
+            "availability": "Партнёры",
+            "list_support": true,
+            "number": "8.30"
+        },
+        {
+            "command": "domain/get_premium_prices",
+            "title": "domain/get_premium_prices",
+            "group": "domain",
+            "group_label": "Домены",
+            "purpose": "возвращает цены для указанных премиум-доменов. Функция проверяет только домены, которые регистратура определила как премиальные и разрешает регистрировать только по повышенной стоимости.",
+            "availability": "Партнёры",
+            "list_support": false,
+            "number": "8.4"
+        },
+        {
+            "command": "domain/get_deleted",
+            "title": "domain/get_deleted",
+            "group": "domain",
+            "group_label": "Домены",
+            "purpose": "Получение списка освобождённых доменов, функция работает подобно странице Свободные и удаленные домены",
+            "availability": "Партнёры",
+            "list_support": false,
+            "number": "8.5"
+        },
+        {
+            "command": "domain/check",
+            "title": "domain/check",
+            "group": "domain",
+            "group_label": "Домены",
+            "purpose": "проверка доступности регистрации домена",
+            "availability": "Партнёры",
+            "list_support": true,
+            "number": "8.6"
+        },
+        {
+            "command": "domain/create",
+            "title": "domain/create",
+            "group": "domain",
+            "group_label": "Домены",
+            "purpose": "подать заявку на регистрацию домена.",
+            "availability": "Клиенты",
+            "list_support": false,
+            "number": "8.7"
+        },
+        {
+            "command": "domain/transfer",
+            "title": "domain/transfer",
+            "group": "domain",
+            "group_label": "Домены",
+            "purpose": "подать заявку на перенос домена от другого регистратора",
+            "availability": "Клиенты",
+            "list_support": false,
+            "number": "8.8"
+        },
+        {
+            "command": "domain/get_transfer_status",
+            "title": "domain/get_transfer_status",
+            "group": "domain",
+            "group_label": "Домены",
+            "purpose": "проверка состояния переноса домена, работает только для тех зон, где REG.RU является регистратором, статус в остальных зонах надо проверять через whois",
+            "availability": "Клиенты",
+            "list_support": true,
+            "number": "8.9"
+        },
+        {
+            "command": "folder/nop",
+            "title": "folder/nop",
+            "group": "folder",
+            "group_label": "Папки услуг",
+            "purpose": "тестовая функция, можно использовать как средство для проверки существования папки",
+            "availability": "Все",
+            "list_support": false,
+            "number": "12.1"
+        },
+        {
+            "command": "folder/create",
+            "title": "folder/create",
+            "group": "folder",
+            "group_label": "Папки услуг",
+            "purpose": "создание папки",
+            "availability": "Все",
+            "list_support": false,
+            "number": "12.2"
+        },
+        {
+            "command": "folder/remove",
+            "title": "folder/remove",
+            "group": "folder",
+            "group_label": "Папки услуг",
+            "purpose": "удаление папки",
+            "availability": "Все",
+            "list_support": false,
+            "number": "12.3"
+        },
+        {
+            "command": "folder/rename",
+            "title": "folder/rename",
+            "group": "folder",
+            "group_label": "Папки услуг",
+            "purpose": "переименование папки.",
+            "availability": "Все",
+            "list_support": false,
+            "number": "12.4"
+        },
+        {
+            "command": "folder/get_services",
+            "title": "folder/get_services",
+            "group": "folder",
+            "group_label": "Папки услуг",
+            "purpose": "получить список услуг в папке",
+            "availability": "Все",
+            "list_support": false,
+            "number": "12.5"
+        },
+        {
+            "command": "folder/add_services",
+            "title": "folder/add_services",
+            "group": "folder",
+            "group_label": "Папки услуг",
+            "purpose": "добавление услуг в папку",
+            "availability": "Все",
+            "list_support": true,
+            "number": "12.6"
+        },
+        {
+            "command": "folder/remove_services",
+            "title": "folder/remove_services",
+            "group": "folder",
+            "group_label": "Папки услуг",
+            "purpose": "удаление услуг из папки",
+            "availability": "Все",
+            "list_support": true,
+            "number": "12.7"
+        },
+        {
+            "command": "folder/replace_services",
+            "title": "folder/replace_services",
+            "group": "folder",
+            "group_label": "Папки услуг",
+            "purpose": "перезаписывание услуг в папке (в результате данной операции все услуги в указанной папке удаляются, а услуги, указанные в параметре domain_name или service_id, добавляются в папку)",
+            "availability": "Все",
+            "list_support": true,
+            "number": "12.8"
+        },
+        {
+            "command": "folder/move_services",
+            "title": "folder/move_services",
+            "group": "folder",
+            "group_label": "Папки услуг",
+            "purpose": "перенос услуг из одной папки в другую",
+            "availability": "Все",
+            "list_support": true,
+            "number": "12.9"
+        },
+        {
+            "command": "hosting/nop",
+            "title": "hosting/nop",
+            "group": "hosting",
+            "group_label": "Хостинги",
+            "purpose": "проверка работоспособности API.",
+            "availability": "Клиенты",
+            "list_support": false,
+            "number": "11.1"
+        },
+        {
+            "command": "service/nop",
+            "title": "service/nop",
+            "group": "service",
+            "group_label": "Услуги",
+            "purpose": "для тестирования, позволяет проверить доступность списка услуг и получить их id",
+            "availability": "Клиенты",
+            "list_support": true,
+            "number": "7.1"
+        },
+        {
+            "command": "service/get_details",
+            "title": "service/get_details",
+            "group": "service",
+            "group_label": "Услуги",
+            "purpose": "Получения дополнительных данных по сервису, в т.ч. контактных данных для доменов",
+            "availability": "Клиенты",
+            "list_support": true,
+            "number": "7.10"
+        },
+        {
+            "command": "service/get_dedicated_server_list",
+            "title": "service/get_dedicated_server_list",
+            "group": "service",
+            "group_label": "Услуги",
+            "purpose": "Получение списка выделенных серверов доступных для заказа.",
+            "availability": "Клиенты",
+            "list_support": false,
+            "number": "7.11"
+        },
+        {
+            "command": "service/update",
+            "title": "service/update",
+            "group": "service",
+            "group_label": "Услуги",
+            "purpose": "настройка услуги.",
+            "availability": "Клиенты",
+            "list_support": false,
+            "number": "7.12"
+        },
+        {
+            "command": "service/renew",
+            "title": "service/renew",
+            "group": "service",
+            "group_label": "Услуги",
+            "purpose": "продление домена или услуги",
+            "availability": "Клиенты",
+            "list_support": true,
+            "number": "7.13"
+        },
+        {
+            "command": "service/get_bills",
+            "title": "service/get_bills",
+            "group": "service",
+            "group_label": "Услуги",
+            "purpose": "получить список счетов, связанных с указанными услугами",
+            "availability": "Партнёры",
+            "list_support": true,
+            "number": "7.14"
+        },
+        {
+            "command": "service/check_readonly",
+            "title": "service/check_readonly",
+            "group": "service",
+            "group_label": "Услуги",
+            "purpose": "проверка разрешено ли редактировать сервис (домен)",
+            "availability": "Клиенты",
+            "list_support": true,
+            "number": "7.15"
+        },
+        {
+            "command": "service/set_autorenew_flag",
+            "title": "service/set_autorenew_flag",
+            "group": "service",
+            "group_label": "Услуги",
+            "purpose": "установить или снять флаг автопродления.",
+            "availability": "Клиенты",
+            "list_support": false,
+            "number": "7.16"
+        },
+        {
+            "command": "service/suspend",
+            "title": "service/suspend",
+            "group": "service",
+            "group_label": "Услуги",
+            "purpose": "приостановить действие услуги (для домена - снять с делегирования)",
+            "availability": "Клиенты",
+            "list_support": false,
+            "number": "7.17"
+        },
+        {
+            "command": "service/resume",
+            "title": "service/resume",
+            "group": "service",
+            "group_label": "Услуги",
+            "purpose": "возобновить действие услуги (для домена - делегировать)",
+            "availability": "Клиенты",
+            "list_support": false,
+            "number": "7.18"
+        },
+        {
+            "command": "service/get_depreciated_period",
+            "title": "service/get_depreciated_period",
+            "group": "service",
+            "group_label": "Услуги",
+            "purpose": "расчитать число периодов до даты истечения срока действия услуги",
+            "availability": "Клиенты",
+            "list_support": false,
+            "number": "7.19"
+        },
+        {
+            "command": "service/get_prices",
+            "title": "service/get_prices",
+            "group": "service",
+            "group_label": "Услуги",
+            "purpose": "Получение цен на регистрацию/продление услуг.",
+            "availability": "Все",
+            "list_support": null,
+            "number": "7.2"
+        },
+        {
+            "command": "service/upgrade",
+            "title": "service/upgrade",
+            "group": "service",
+            "group_label": "Услуги",
+            "purpose": "произвести повышение подтипа (тарифа) услуги. Используется для изменения тарифа виртуального хостинга (\"srv_hosting_ispmgr\") и конструктора сайтов REG.RU (\"srv_websitebuilder\").",
+            "availability": "Клиенты",
+            "list_support": false,
+            "number": "7.20"
+        },
+        {
+            "command": "service/partcontrol_grant",
+            "title": "service/partcontrol_grant",
+            "group": "service",
+            "group_label": "Услуги",
+            "purpose": "предоставить право частичного управления услугой другому пользователю",
+            "availability": "Клиенты",
+            "list_support": false,
+            "number": "7.21"
+        },
+        {
+            "command": "service/partcontrol_revoke",
+            "title": "service/partcontrol_revoke",
+            "group": "service",
+            "group_label": "Услуги",
+            "purpose": "отключить право частичного управления услугой",
+            "availability": "Клиенты",
+            "list_support": false,
+            "number": "7.22"
+        },
+        {
+            "command": "service/resend_mail",
+            "title": "service/resend_mail",
+            "group": "service",
+            "group_label": "Услуги",
+            "purpose": "повторить email сообщение.",
+            "availability": "Клиенты",
+            "list_support": false,
+            "number": "7.23"
+        },
+        {
+            "command": "service/refill",
+            "title": "service/refill",
+            "group": "service",
+            "group_label": "Услуги",
+            "purpose": "Пополнение баланса услуги. Поддерживаемые типы услуг:",
+            "availability": "Клиенты",
+            "list_support": false,
+            "number": "7.24"
+        },
+        {
+            "command": "service/get_balance",
+            "title": "service/get_balance",
+            "group": "service",
+            "group_label": "Услуги",
+            "purpose": "Получение баланса внешней услуги. Поддерживаемые типы услуг: srv_seowizard — Автоматическое SEO-продвижение",
+            "availability": "Клиенты",
+            "list_support": false,
+            "number": "7.25"
+        },
+        {
+            "command": "service/seowizard_manage_link",
+            "title": "service/seowizard_manage_link",
+            "group": "service",
+            "group_label": "Услуги",
+            "purpose": "Получение ссылки на панель управления услугой \"Автоматическое SEO-продвижение\"",
+            "availability": "Партнёры",
+            "list_support": false,
+            "number": "7.26"
+        },
+        {
+            "command": "service/get_websitebuilder_link",
+            "title": "service/get_websitebuilder_link",
+            "group": "service",
+            "group_label": "Услуги",
+            "purpose": "Получение ссылки для публикации конструктора",
+            "availability": "Партнёры",
+            "list_support": false,
+            "number": "7.27"
+        },
+        {
+            "command": "service/get_servtype_details",
+            "title": "service/get_servtype_details",
+            "group": "service",
+            "group_label": "Услуги",
+            "purpose": "Получение цены и общих данных для услуги.",
+            "availability": "Все",
+            "list_support": null,
+            "number": "7.3"
+        },
+        {
+            "command": "service/create",
+            "title": "service/create",
+            "group": "service",
+            "group_label": "Услуги",
+            "purpose": "заказ новой услуги.",
+            "availability": "Все",
+            "list_support": false,
+            "number": "7.4"
+        },
+        {
+            "command": "service/check_create",
+            "title": "service/check_create",
+            "group": "service",
+            "group_label": "Услуги",
+            "purpose": "Валидация параметров заказа новой услуги. Проверяет поле domain_name, также может валидировать поля subtype и period.",
+            "availability": "Все",
+            "list_support": false,
+            "number": "7.5"
+        },
+        {
+            "command": "service/delete",
+            "title": "service/delete",
+            "group": "service",
+            "group_label": "Услуги",
+            "purpose": "Удаляет услугу",
+            "availability": "Клиенты",
+            "list_support": false,
+            "number": "7.6"
+        },
+        {
+            "command": "service/get_info",
+            "title": "service/get_info",
+            "group": "service",
+            "group_label": "Услуги",
+            "purpose": "получить информацию о услугах",
+            "availability": "Клиенты",
+            "list_support": true,
+            "number": "7.7"
+        },
+        {
+            "command": "service/get_list",
+            "title": "service/get_list",
+            "group": "service",
+            "group_label": "Услуги",
+            "purpose": "получить список активных услуг",
+            "availability": "Клиенты",
+            "list_support": null,
+            "number": "7.8"
+        },
+        {
+            "command": "service/get_folders",
+            "title": "service/get_folders",
+            "group": "service",
+            "group_label": "Услуги",
+            "purpose": "получение списка папок в которые входит сервис",
+            "availability": "Клиенты",
+            "list_support": false,
+            "number": "7.9"
+        },
+        {
+            "command": "shop/nop",
+            "title": "shop/nop",
+            "group": "shop",
+            "group_label": "Магазин доменов",
+            "purpose": "для тестирования, позволяет проверить существования лота по имени домена получить его id",
+            "availability": "Клиенты",
+            "list_support": true,
+            "number": "13.1"
+        },
+        {
+            "command": "shop/delete_lot",
+            "title": "shop/delete_lot",
+            "group": "shop",
+            "group_label": "Магазин доменов",
+            "purpose": "удаление лота/лотов",
+            "availability": "Все",
+            "list_support": null,
+            "number": "13.2"
+        },
+        {
+            "command": "shop/get_info",
+            "title": "shop/get_info",
+            "group": "shop",
+            "group_label": "Магазин доменов",
+            "purpose": "получение информации по лоту",
+            "availability": "Все",
+            "list_support": null,
+            "number": "13.3"
+        },
+        {
+            "command": "shop/get_lot_list",
+            "title": "shop/get_lot_list",
+            "group": "shop",
+            "group_label": "Магазин доменов",
+            "purpose": "получение списка лотов",
+            "availability": "Все",
+            "list_support": null,
+            "number": "13.4"
+        },
+        {
+            "command": "shop/get_category_list",
+            "title": "shop/get_category_list",
+            "group": "shop",
+            "group_label": "Магазин доменов",
+            "purpose": "получение списка категорий",
+            "availability": "Все",
+            "list_support": null,
+            "number": "13.5"
+        },
+        {
+            "command": "shop/get_suggested_tags",
+            "title": "shop/get_suggested_tags",
+            "group": "shop",
+            "group_label": "Магазин доменов",
+            "purpose": "получения списка популярных тегов для лота",
+            "availability": "Все",
+            "list_support": null,
+            "number": "13.6"
+        },
+        {
+            "command": "user/nop",
+            "title": "user/nop",
+            "group": "user",
+            "group_label": "Пользователь и аккаунт",
+            "purpose": "для тестирования доступности",
+            "availability": "Все",
+            "list_support": false,
+            "number": "5.1"
+        },
+        {
+            "command": "user/create",
+            "title": "user/create",
+            "group": "user",
+            "group_label": "Пользователь и аккаунт",
+            "purpose": "регистрация нового пользователя",
+            "availability": "Партнёры",
+            "list_support": false,
+            "number": "5.2"
+        },
+        {
+            "command": "user/get_statistics",
+            "title": "user/get_statistics",
+            "group": "user",
+            "group_label": "Пользователь и аккаунт",
+            "purpose": "получение статистики по пользователю",
+            "availability": "Клиенты",
+            "list_support": false,
+            "number": "5.3"
+        },
+        {
+            "command": "user/get_balance",
+            "title": "user/get_balance",
+            "group": "user",
+            "group_label": "Пользователь и аккаунт",
+            "purpose": "просмотр суммы на счёте",
+            "availability": "Клиенты",
+            "list_support": false,
+            "number": "5.4"
+        },
+        {
+            "command": "user/set_reseller_url",
+            "title": "user/set_reseller_url",
+            "group": "user",
+            "group_label": "Пользователь и аккаунт",
+            "purpose": "Установка URL для редиректа из внешней услуги",
+            "availability": "Партнёры",
+            "list_support": false,
+            "number": "5.5"
+        },
+        {
+            "command": "user/get_reseller_url",
+            "title": "user/get_reseller_url",
+            "group": "user",
+            "group_label": "Пользователь и аккаунт",
+            "purpose": "Получение URL для редиректа из внешней услуги.",
+            "availability": "Партнёры",
+            "list_support": false,
+            "number": "5.6"
+        },
+        {
+            "command": "user/get_persons",
+            "title": "user/get_persons",
+            "group": "user",
+            "group_label": "Пользователь и аккаунт",
+            "purpose": "Получение всех персон пользователя и статуса их идентифицированности в ЕСИА.",
+            "availability": "Клиенты",
+            "list_support": false,
+            "number": "5.7"
+        },
+        {
+            "command": "zone/nop",
+            "title": "zone/nop",
+            "group": "zone",
+            "group_label": "DNS-зоны",
+            "purpose": "для тестирования, позволяет проверить доступность управления DNS-зоной доменов; управление DNS-зоной возможно только если домену прописаны DNS сервера REG.RU: ns1.reg.ru и ns2.reg.ru",
+            "availability": "Клиенты",
+            "list_support": true,
+            "number": "9.1"
+        },
+        {
+            "command": "zone/add_srv",
+            "title": "zone/add_srv",
+            "group": "zone",
+            "group_label": "DNS-зоны",
+            "purpose": "добавить сервисную запись",
+            "availability": "Клиенты",
+            "list_support": true,
+            "number": "9.10"
+        },
+        {
+            "command": "zone/get_resource_records",
+            "title": "zone/get_resource_records",
+            "group": "zone",
+            "group_label": "DNS-зоны",
+            "purpose": "получение ресурсных записей зоны для каждого домена",
+            "availability": "Клиенты",
+            "list_support": true,
+            "number": "9.11"
+        },
+        {
+            "command": "zone/update_records",
+            "title": "zone/update_records",
+            "group": "zone",
+            "group_label": "DNS-зоны",
+            "purpose": "добавление и/или удаление нескольких ресурсных записей одним запросом, порядок элементов в передаваемом массиве имеет значение, т.к. одни записи могут быть зависимыми от других, в случае возникновения ошибки в одной из записей из action_list, последующиее игнорируются.",
+            "availability": "Партнёры",
+            "list_support": true,
+            "number": "9.12"
+        },
+        {
+            "command": "zone/update_soa",
+            "title": "zone/update_soa",
+            "group": "zone",
+            "group_label": "DNS-зоны",
+            "purpose": "изменить время жизни кеша для зоны",
+            "availability": "Клиенты",
+            "list_support": true,
+            "number": "9.13"
+        },
+        {
+            "command": "zone/tune_forwarding",
+            "title": "zone/tune_forwarding",
+            "group": "zone",
+            "group_label": "DNS-зоны",
+            "purpose": "добавить ресурсные записи, необходимые для web-форвардинга",
+            "availability": "Клиенты",
+            "list_support": true,
+            "number": "9.14"
+        },
+        {
+            "command": "zone/clear_forwarding",
+            "title": "zone/clear_forwarding",
+            "group": "zone",
+            "group_label": "DNS-зоны",
+            "purpose": "удалить ресурсные записи, необходимые для web-форвардинга",
+            "availability": "Клиенты",
+            "list_support": true,
+            "number": "9.15"
+        },
+        {
+            "command": "zone/tune_parking",
+            "title": "zone/tune_parking",
+            "group": "zone",
+            "group_label": "DNS-зоны",
+            "purpose": "добавить ресурсные записи, необходимые для парковки домена",
+            "availability": "Клиенты",
+            "list_support": true,
+            "number": "9.16"
+        },
+        {
+            "command": "zone/clear_parking",
+            "title": "zone/clear_parking",
+            "group": "zone",
+            "group_label": "DNS-зоны",
+            "purpose": "удалить ресурсные записи, необходимые для парковки домена",
+            "availability": "Клиенты",
+            "list_support": true,
+            "number": "9.17"
+        },
+        {
+            "command": "zone/remove_record",
+            "title": "zone/remove_record",
+            "group": "zone",
+            "group_label": "DNS-зоны",
+            "purpose": "удалить ресурсную запись",
+            "availability": "Клиенты",
+            "list_support": true,
+            "number": "9.18"
+        },
+        {
+            "command": "zone/clear",
+            "title": "zone/clear",
+            "group": "zone",
+            "group_label": "DNS-зоны",
+            "purpose": "удалить все ресурсные записи",
+            "availability": "Клиенты",
+            "list_support": true,
+            "number": "9.19"
+        },
+        {
+            "command": "zone/add_alias",
+            "title": "zone/add_alias",
+            "group": "zone",
+            "group_label": "DNS-зоны",
+            "purpose": "cвязать поддомен с IP-адресом",
+            "availability": "Клиенты",
+            "list_support": true,
+            "number": "9.2"
+        },
+        {
+            "command": "zone/add_aaaa",
+            "title": "zone/add_aaaa",
+            "group": "zone",
+            "group_label": "DNS-зоны",
+            "purpose": "cвязать поддомен с IPv6-адресом",
+            "availability": "Клиенты",
+            "list_support": true,
+            "number": "9.3"
+        },
+        {
+            "command": "zone/add_caa",
+            "title": "zone/add_caa",
+            "group": "zone",
+            "group_label": "DNS-зоны",
+            "purpose": "указать правила выпуска SSL сертификатов для поддомена",
+            "availability": "Клиенты",
+            "list_support": true,
+            "number": "9.4"
+        },
+        {
+            "command": "zone/add_cname",
+            "title": "zone/add_cname",
+            "group": "zone",
+            "group_label": "DNS-зоны",
+            "purpose": "cвязать поддомен с адресом другого домена",
+            "availability": "Клиенты",
+            "list_support": true,
+            "number": "9.5"
+        },
+        {
+            "command": "zone/add_https",
+            "title": "zone/add_https",
+            "group": "zone",
+            "group_label": "DNS-зоны",
+            "purpose": "указать правила для соединения с доменом",
+            "availability": "Клиенты",
+            "list_support": true,
+            "number": "9.6"
+        },
+        {
+            "command": "zone/add_mx",
+            "title": "zone/add_mx",
+            "group": "zone",
+            "group_label": "DNS-зоны",
+            "purpose": "указать почтовый сервер в виде доменного имени или IP-адреса, который будет принимать почту для вашего домена",
+            "availability": "Клиенты",
+            "list_support": true,
+            "number": "9.7"
+        },
+        {
+            "command": "zone/add_ns",
+            "title": "zone/add_ns",
+            "group": "zone",
+            "group_label": "DNS-зоны",
+            "purpose": "передать управление поддоменами на другие DNS-сервера",
+            "availability": "Клиенты",
+            "list_support": true,
+            "number": "9.8"
+        },
+        {
+            "command": "zone/add_txt",
+            "title": "zone/add_txt",
+            "group": "zone",
+            "group_label": "DNS-зоны",
+            "purpose": "добавить произвольную текстовую запись (TXT) для поддомена",
+            "availability": "Клиенты",
+            "list_support": true,
+            "number": "9.9"
+        }
+    ]
+}
