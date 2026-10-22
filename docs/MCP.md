@@ -40,6 +40,43 @@ php backend/bin/regru token:create \
 | `REGRU_MCP_CAINFO` | нет | путь к CA-бандлу, если PHP не находит системный |
 | `REGRU_MCP_INSECURE` | нет | `1` отключает проверку TLS — только для доверенной LAN |
 
+### Токен из файла
+
+Некоторые MCP-клиенты (включая DeepSeek Harness) вычищают из окружения дочернего процесса переменные с `TOKEN`, `KEY`, `SECRET`, `PASSWORD`. Тогда токен передаётся файлом:
+
+```bash
+php mcp/server.php --token-file /path/to/token.txt
+```
+
+Файл должен быть доступен только владельцу (`0600`). `--token-file` имеет приоритет над `REGRU_API_TOKEN`; сам токен не попадает ни в аргументы процесса, ни в логи.
+
+### Регистрация в DeepSeek Harness
+
+Слой патчей `%USERPROFILE%\.dsh\profiles\desktop\cordis.patch.yml`:
+
+```yaml
+- insert:
+    - id: mcp-regru-control
+      name: '@deepseek-ai/dsh-mcp-client'
+      config:
+        serverName: regru
+        transport: stdio
+        command: 'C:\tools\php85\php.exe'
+        args:
+          - 'C:\AutoClaw\AMD\REG.RU\GIT\mcp\server.php'
+          - '--token-file'
+          - 'C:\AutoClaw\AMD\REG.RU\.recon\agent-token.txt'
+        env:
+          REGRU_PANEL_URL: 'https://example.com/regru'
+          REGRU_MCP_ALLOW_WRITE: '0'
+          REGRU_MCP_LOCALE: 'ru'
+        cwd: 'C:\AutoClaw\AMD\REG.RU\GIT'
+        toolCallTimeoutMs: 120000
+        failOnStartupError: false
+```
+
+После правки конфига HARNESS нужно перезапустить; инструменты появятся как `mcp__regru__regru_inventory`, `mcp__regru__regru_dns_records` и т. д.
+
 Проверка без сети:
 
 ```bash

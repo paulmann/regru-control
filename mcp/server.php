@@ -23,7 +23,7 @@ const SERVER_NAME = 'regru-control';
 const SERVER_VERSION = '1.0.0';
 const PROTOCOL_VERSION = '2024-11-05';
 
-$options = getopt('', ['self-test', 'help']);
+$options = getopt('', ['self-test', 'help', 'token-file:']);
 
 if (isset($options['help'])) {
     fwrite(STDOUT, "REG.RU Control MCP server (stdio).\n\nEnvironment:\n");
@@ -32,14 +32,22 @@ if (isset($options['help'])) {
     fwrite(STDOUT, "  REGRU_MCP_ALLOW_WRITE  1 to enable write/destructive tools (default 0)\n");
     fwrite(STDOUT, "  REGRU_MCP_LOCALE    response language: en, ru, zh, hi, de, es (default en)\n");
     fwrite(STDOUT, "  REGRU_MCP_TIMEOUT   HTTP timeout in seconds (default 30)\n");
+    fwrite(STDOUT, "  --token-file PATH   read the API token from a file (useful when the MCP client filters TOKEN env names)\n");
     fwrite(STDOUT, "  REGRU_MCP_CAINFO    path to a CA bundle (auto-detected on common systems)\n");
     fwrite(STDOUT, "  REGRU_MCP_INSECURE  1 to skip TLS verification (development only)\n");
     exit(0);
 }
 
+$tokenFile = (string) ($options['token-file'] ?? '');
+$token = (string) (getenv('REGRU_API_TOKEN') ?: '');
+
+if ($tokenFile !== '') {
+    $token = is_file($tokenFile) ? trim((string) file_get_contents($tokenFile)) : '';
+}
+
 $config = [
     'panel_url' => rtrim((string) (getenv('REGRU_PANEL_URL') ?: ''), '/'),
-    'token' => (string) (getenv('REGRU_API_TOKEN') ?: ''),
+    'token' => $token,
     'allow_write' => in_array(getenv('REGRU_MCP_ALLOW_WRITE'), ['1', 'true', 'yes'], true),
     'locale' => (string) (getenv('REGRU_MCP_LOCALE') ?: 'en'),
     'timeout' => max(5, (int) (getenv('REGRU_MCP_TIMEOUT') ?: 30)),
