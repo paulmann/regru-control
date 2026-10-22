@@ -115,15 +115,15 @@
 
 ```mermaid
 flowchart LR
-  U[Браузер · SPA] -->|cookie + CSRF| API[PHP API /api/v1]
-  A[AI-агент] -->|Bearer-токен| API
-  M[MCP-клиент] -->|stdio JSON-RPC 2.0| S[MCP-сервер]
+  U["Браузер (SPA)"] -->|"cookie + CSRF"| API["PHP API v1"]
+  A["AI-агент"] -->|"Bearer-токен"| API
+  M["MCP-клиент"] -->|"stdio JSON-RPC"| S["MCP-сервер"]
   S --> API
-  API --> SVC[Сервисы и CLI]
-  SVC --> DB[(SQLite · WAL)]
-  SVC --> ENC[libsodium · secretbox]
-  SVC --> RR[REG.RU API v2]
-  CLI[regru CLI] --> SVC
+  API --> SVC["Сервисы и CLI"]
+  SVC --> DB[("SQLite WAL")]
+  SVC --> ENC["libsodium secretbox"]
+  SVC --> RR["REG.RU API v2"]
+  CLI["regru CLI"] --> SVC
 ```
 
 | Компонент | Ответственность |
